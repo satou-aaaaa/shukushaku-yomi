@@ -49,8 +49,8 @@
     const w = Math.min(200, 20 + cm * 16);
     return `<svg viewBox="0 0 240 90" width="240" height="90" role="img" aria-label="${name(d)}の地図に、長さ${fmt(cm)}cmの線"><rect x="4" y="4" width="232" height="82" rx="4" fill="#f4f1e2" stroke="#5a4a2f"/><path d="M20 70 Q60 30 110 52 T220 30" fill="none" stroke="#8fb39b" stroke-width="6" opacity=".6"/><line x1="20" y1="24" x2="${20 + w}" y2="24" stroke="#b8322a" stroke-width="3"/><circle cx="20" cy="24" r="4" fill="#b8322a"/><circle cx="${20 + w}" cy="24" r="4" fill="#b8322a"/><text x="120" y="80" text-anchor="middle" font-size="12" fill="#333">${name(d)}・線の長さ ${fmt(cm)}cm</text></svg>`;
   }
-  function contourSvg(n, thickAt) {
-    let p = ""; for (let i = 0; i <= n; i++) { const r = 70 - i * (60 / Math.max(1, n)); p += `<ellipse cx="120" cy="58" rx="${r * 1.5}" ry="${r * 0.55}" fill="none" stroke="#7a5230" stroke-width="${i === thickAt ? 3 : 1.2}"/>`; }
+  function contourSvg(n, thickTo) { // n 区間を描く。thickTo 以下で5の倍数の線（はじめの線から50mごと）を太くする（-1 なら全部細い）
+    let p = ""; for (let i = 0; i <= n; i++) { const r = 70 - i * (60 / Math.max(1, n)); p += `<ellipse cx="120" cy="58" rx="${r * 1.5}" ry="${r * 0.55}" fill="none" stroke="#7a5230" stroke-width="${thickTo >= 0 && i <= thickTo && i % 5 === 0 ? 3 : 1.2}"/>`; }
     return `<svg viewBox="0 0 240 110" width="240" height="110" role="img" aria-label="山を上から見た等高線">${p}<text x="120" y="62" text-anchor="middle" font-size="12" fill="#333">▲</text></svg>`;
   }
 
@@ -111,7 +111,7 @@
     // 2点の高さの差（計曲線と主曲線）
     sa(R) {
       const d = C, s = SCALE[d], k = ri(R, 1, 4), n = ri(R, 0, 4), diff = k * s.thick + n * s.main, md = ri(R, 0, MEDIA.length - 1);
-      return { media: MEDIA[md], q: `${name(d)}の地形図。ふもとの点は太い計曲線の上。山頂側へ、太い計曲線を${k}本、そのあと細い主曲線を${n}本こえた線の上の点との高さの差は？`, svg: contourSvg(k + n, 0), opts: optsOf(R, diff + "m", [(k + n) * s.main + "m", (k + n) * s.thick + "m", k * 100 + n * 20 + "m", diff + s.main + "m", diff * 2 + "m"], 4), ans: diff + "m", grp: "sen", v: `${k}:${n}:${md}`,
+      return { media: MEDIA[md], q: `${name(d)}の地形図。ふもとの点は太い計曲線の上。山頂側へ、太い計曲線を${k}本、そのあと細い主曲線を${n}本こえた線の上の点との高さの差は？`, svg: contourSvg(k * 5 + n, k * 5), opts: optsOf(R, diff + "m", [(k + n) * s.main + "m", (k + n) * s.thick + "m", k * 100 + n * 20 + "m", diff + s.main + "m", diff * 2 + "m"], 4), ans: diff + "m", grp: "sen", v: `${k}:${n}:${md}`,
         why: `${name(d)}は計曲線が${s.thick}mごと・主曲線が${s.main}mごと。${s.thick} × ${k} ＋ ${s.main} × ${n} ＝ ${diff}mです。` };
     },
     // 面積（地図上の正方形）
